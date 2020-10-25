@@ -386,7 +386,7 @@ def main():
 
         # check service data, cannot error out on rc as it changes across versions, assume not found
         (rc, out, err) = module.run_command("%s show '%s'" % (systemctl, unit))
-        
+
         if rc == 0 and not (request_was_ignored(out) or request_was_ignored(err)):
             # load return of systemctl show into dictionary for easy access and return
             if out:
@@ -399,14 +399,14 @@ def main():
                 # Check for loading error
                 if is_systemd and not is_masked and 'LoadError' in result['status']:
                     module.fail_json(msg="Error loading unit file '%s': %s" % (unit, result['status']['LoadError']))
-        
-        # Workaraund for https://github.com/ansible/ansible/issues/71528            
+
+        # Workaround for https://github.com/ansible/ansible/issues/71528
         elif err and rc == 1 and 'Failed to parse bus message' in err:
             result['status'] = parse_systemctl_show(to_native(out).split('\n'))
-            
+
             (rc, out, err) = module.run_command("{systemctl} list-units '{unit}*'".format(systemctl=systemctl, unit=unit))
             is_systemd = unit in out
-            
+
             (rc, out, err) = module.run_command("{systemctl} is-active '{unit}'".format(systemctl=systemctl, unit=unit))
             result['status']['ActiveState'] = out.rstrip('\n')
 
